@@ -1,26 +1,5 @@
-import time
-from time import sleep
 from rejex import state_rent
-import locale
-
-locale.setlocale(locale.LC_ALL, '')
-
-def m(x):
-    return locale.currency(x, grouping=True)
-
-def int_(x):
-    x = str(x.replace("$", "").replace(" ", "").replace(",", ""))
-    for n in x:
-        if n not in "0123456789.":
-            print("\n. . .\nERROR: Enter a valid number.\n. . .\n")
-            return False
-        else: 
-            return float(x)
-
-def dots(x):
-    for z in range(x):
-        print('.', end=' ', flush=True)
-        time.sleep(0.3)
+from helpers import *
 
 class ROI():
     def __init__(self, user):
@@ -29,10 +8,11 @@ class ROI():
         self.expenses = {}
         self.investment = 0
         self.renters = 0
+        self.roi = 0
 
     def add_income(self):
         while True: 
-            print("\nINCOME")
+            print("\nMONTHLY INCOME")
             if self.total_income() != 0:
                 print(f"Total income so far: {m(self.total_income())}")
             response = input("\nWhat sort of monthly income would you like to add/adjust? \n\tEnter [R] for Rental, [P] for Parking, [L] for laundry or [O] for other. \n\tEnter [S] to show your total income. \n\tEnter [F] when you're finished:  ").lower()
@@ -89,35 +69,8 @@ class ROI():
     def total_income(self):
        return sum(self.income.values())
 
-    def total_expenses(self):
-       return sum(self.expenses.values())
-
-    def intl_investment(self):
-        print("\nINTITIAL INVESTMENT")
-        t_inv = input("\nEnter how much your total property investment. If you're not sure, or want to add additional info, enter [C] to calculate:  ").lower()
-        if t_inv == "c":
-            dp = input("Enter how much you paid for your down payment. If you're not sure, enter [C] to calculate:  ").lower()
-            if dp == "c":
-                pv = input("Enter the total propety value:  $")
-                if int_(pv):
-                    dp = int(int(pv) * .2)
-                    print(f"A typical down payment (20%) for this property would be {m(dp)}. Adding that to your initial investment.")
-                    self.investment += dp
-            elif int_(dp):
-                self.investment += int_(dp)
-            while True:
-                o_inv = input("What other initial investments would you like to add? Example: Closing costs, Repairs, etc. When you're finished, enter [F]: " ).lower()
-                if o_inv == "f":
-                    break
-                else: 
-                    amount = input(f"how much would you like to add for {o_inv}? ")
-                    if int_(amount):
-                        self.investment += int_(amount)
-        elif int_(t_inv):
-            self.investment = int_(t_inv)
-        print(f"Total initial investment: {m(self.investment)}")
-
     def add_expenses(self):
+        print("\n")
         while True:
             print("\nMONTHLY EXPENSES")
             if self.total_expenses() != 0:
@@ -127,8 +80,8 @@ class ROI():
                 mort = input("\nIf you already know your total mortgage, enter it now. Otherwise, enter [C] to calculate.  ").lower()
                 if mort == "c":
                     print("Visit this website to calculate your mortgage payment: https://www.calculator.net/mortgage-calculator.html")
-                    mort = input("\nEbter your estimated monthly mortgage payment:  $").lower()
-                elif int_(mort):
+                    mort = input("\nEnter your estimated monthly mortgage payment:  $").lower()
+                if int_(mort):
                     self.expenses['rent'] = int_(mort)
             elif response in ("i", "insurance"):
                 ins = input("\nEnter estimated monthly insurance:  $")
@@ -149,6 +102,34 @@ class ROI():
                 break
             else:
                 print("Sorry, I didn't unserstand that input.")
+
+    def total_expenses(self):
+       return sum(self.expenses.values())
+
+    def intl_investment(self):
+        print("\nINTITIAL INVESTMENT")
+        t_inv = input("\nEnter your total property investment. If you're not sure, or want to add additional info, enter [C] to calculate:  ").lower()
+        if t_inv == "c":
+            dp = input("Enter how much you paid for your down payment. If you're not sure, enter [C] to calculate:  ").lower()
+            if dp == "c":
+                pv = input("Enter the total propety value:  $")
+                if int_(pv):
+                    dp = int(int_(pv) * .2)
+                    print(f"A typical down payment (20%) for this property would be {m(dp)}. Adding that to your initial investment.")
+                    self.investment += dp
+            elif int_(dp):
+                self.investment += int_(dp)
+            while True:
+                o_inv = input("What other initial investments would you like to add? Example: Closing costs, Repairs, etc. When you're finished, enter [F]: " ).lower()
+                if o_inv == "f":
+                    break
+                else: 
+                    amount = input(f"how much would you like to add for {o_inv}? ")
+                    if int_(amount):
+                        self.investment += int_(amount)
+        elif int_(t_inv):
+            self.investment = int_(t_inv)
+        print(f"Total initial investment: {m(self.investment)}")
 
     def renter_calc(self, charge, rate=0):
         """calculates the price of something based on number of tenants. If number of thenats not yet known, asks and stores that info"""
@@ -174,11 +155,13 @@ class ROI():
                 print(f"\t{key.title()}: {m(value)}")
             print(f"Total Expenses: {m(self.total_expenses())}")
         elif x == "investment":
-            print(f"Total initial investment: {m(self.investment)}")
+            print(f"\nTotal initial investment: {m(self.investment)}")
+        elif x == "roi":
+            print(f"\nCurrent Return on Investment: {self.roi}%")
 
     def calc_roi(self):
         while True: 
-            print("Let's get started calculating ROI. We'll collect information about your intial investment in your propety and your monthly income and expenses.")
+            print("\nLet's get started calculating ROI. We'll collect/review information about your intial investment in your propety and your monthly income and expenses.")
             if not self.total_income():
                 self.add_income()
             if not self.total_expenses():
@@ -190,8 +173,10 @@ class ROI():
             self.display_info("income")
             self.display_info("expenses")
             self.display_info("investment")
+            if self.roi:
+                self.display_info("roi")
             while True:
-                response = input("\n\nIf you're ready to calculate ROI, enter [N] for next. Other wise, enter [INC] to edit income, [EXP] to edit investmen, or [INV] to edit invesments.\n")
+                response = input("\n\nIf you're ready to calculate ROI, enter [N] for next. \nOtherwise, enter [INC] to edit income, [EXP] to edit expenses or [INV] to edit investments.\n")
                 if response.lower() in "next":
                     break
                 elif response.lower() == "exp":
@@ -207,27 +192,40 @@ class ROI():
             dots(5)
             print(f"\nYour estimated annual cash flow is {m(acashflow)}")
             dots(5)
-            roi = int((acashflow / self.investment) * 100)
+            self.roi = int((acashflow / self.investment) * 100)
             print("\nYour return on investment is ", end = "")
             dots(5)
-            print(f"{roi}%!")
-            if roi > 20:
+            print(f"{self.roi}%!")
+            if self.roi > 20:
                 print("That's pretty high... you should consider lowering your rents, ya greedy capatalist!")
-            elif roi >= 8:
+            elif self.roi >= 8:
                 print("That's a pretty good ROI!")
-            elif roi < 8:
+            elif self.roi < 8:
                 print("That's a little low. You should consider raising your rent!")
-            elif roi < 0:
+            elif self.roi < 0:
                 print("That's a negative ROI! Please reconsider a career in finance!")
             
             response = input("\n\nIf you're satisifed, enter [Q] to exit. If you'd like to review or edit your information, press any other key\n")
             if response.lower() == "q":
+                print("\nGoodbye!\n")
                 break
 
-name = input("\n\nwelcome to Julia's Return on Invesment Calculator. Enter you name to begin: ").lower()
-user = ROI(name)
+users = {}
 
-user.calc_roi()
+while True:
+    name = input("\n\nwelcome to Julia's Return on Invesment Calculator. Enter Q to exit. Log in to begin.\nUsername: ").lower()
+    if name == "q":
+        break
+    pw = input("\npassword: ")
+    if name in users:
+        print(f"\nWelcome back, {name.title()}")
+        users[name].calc_roi()
+
+    else:
+        print(f"\nWelcome, {name.title()}")
+        users[name] = ROI(name)
+        users[name].calc_roi()
+
 
 
 
