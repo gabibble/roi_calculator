@@ -1,7 +1,8 @@
-from cmath import inf
-from urllib import response
+import time
+from time import sleep
 from rejex import state_rent
 import locale
+
 locale.setlocale(locale.LC_ALL, '')
 
 def m(x):
@@ -16,20 +17,17 @@ def int_(x):
         else: 
             return float(x)
 
-#ROI 
-#EXPENSES
-#CASHFLOW (INCOME - EXPENSES)
-#DOWN PAYMENT
-#TOTAL INVESTMENT (Down payment, repairs, etc.)
-
-#Anuall cash flow/total investment
+def dots(x):
+    for z in range(x):
+        print('.', end=' ', flush=True)
+        time.sleep(0.3)
 
 class ROI():
     def __init__(self, user):
         self.user = user
-        self.income = {"ph":40000}
-        self.expenses = {"ph":30000}
-        self.investment = 500000
+        self.income = {}
+        self.expenses = {}
+        self.investment = 0
         self.renters = 0
 
     def add_income(self):
@@ -188,11 +186,12 @@ class ROI():
             if not self.investment: 
                 self.intl_investment()
             print(f"\nlet's review {self.user.title()}'s information so far:")
+            dots(3)
             self.display_info("income")
             self.display_info("expenses")
             self.display_info("investment")
             while True:
-                response = input("\n\nIf you're ready to calculate ROI, enter [N] for next. Other wise, enter [INC] to edit income, [EXP] to edit investmen, or [INV] to edit invesments. ")
+                response = input("\n\nIf you're ready to calculate ROI, enter [N] for next. Other wise, enter [INC] to edit income, [EXP] to edit investmen, or [INV] to edit invesments.\n")
                 if response.lower() in "next":
                     break
                 elif response.lower() == "exp":
@@ -201,27 +200,35 @@ class ROI():
                     self.add_income()
                 elif response.lower() == "inv":
                     self.intl_investment()
-            cashflow = self.total_income() - self.total_expenses()
-            print(f"Let's calculate your cash flow:\nincome ({m(self.total_income())}) - expenses ({m(self.total_expenses())}) = {m(cashflow)}")
-            break
-
-            #Opportunity for user to edit their info
+            mcashflow = self.total_income() - self.total_expenses()
+            acashflow = mcashflow * 12
+            dots(5)
+            print(f"\nLet's calculate your total montlhy cash flow:\nIncome ({m(self.total_income())}) - Expenses ({m(self.total_expenses())}) = {m(mcashflow)}")
+            dots(5)
+            print(f"\nYour estimated annual cash flow is {m(acashflow)}")
+            dots(5)
+            roi = int((acashflow / self.investment) * 100)
+            print("\nYour return on investment is ", end = "")
+            dots(5)
+            print(f"{roi}%!")
+            if roi > 20:
+                print("That's pretty high... you should consider lowering your rents, ya greedy capatalist!")
+            elif roi >= 8:
+                print("That's a pretty good ROI!")
+            elif roi < 8:
+                print("That's a little low. You should consider raising your rent!")
+            elif roi < 0:
+                print("That's a negative ROI! Please reconsider a career in finance!")
             
-
-
-
-        
-
-
+            response = input("\n\nIf you're satisifed, enter [Q] to exit. If you'd like to review or edit your information, press any other key\n")
+            if response.lower() == "q":
+                break
 
 name = input("\n\nwelcome to Julia's Return on Invesment Calculator. Enter you name to begin: ").lower()
 user = ROI(name)
 
 user.calc_roi()
 
-
-
-# print(brandon.total_income())
 
 
 
